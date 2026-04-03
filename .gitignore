@@ -1,0 +1,39 @@
+# ── Frontend ──
+frontend/node_modules/
+frontend/build/
+frontend/.env.local
+frontend/.env*.local
+frontend/npm-debug.log*
+
+# ── Backend (Python / Flask) ──
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+backend/venv/
+backend/env/
+backend/.venv/
+backend/uploads/
+backend/*.log
+
+# ── Python general ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+
+# ── Virtual environments ──
+venv/
+env/
+.venv/
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ──
+.vscode/
+.idea/
+
+# ── Old folder (to be deleted manually) ──
+talant-scan-ai/
