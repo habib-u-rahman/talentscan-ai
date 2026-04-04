@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* ── Typing dots ── */
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #60a5fa; }
+.dot-1 { animation: dotBounce 1.3s infinite ease-in-out 0s; }
+.dot-2 { animation: dotBounce 1.3s infinite ease-in-out 0.15s; }
+.dot-3 { animation: dotBounce 1.3s infinite ease-in-out 0.3s; }
+
+@keyframes dotBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%           { transform: translateY(-7px); opacity: 1; }
+}
+
+/* ── Chat scrollbar ── */
+.chat-scroll { scroll-behavior: smooth; }
+.chat-scroll::-webkit-scrollbar { width: 4px; }
+.chat-scroll::-webkit-scrollbar-track { background: transparent; }
+.chat-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
+
+/* ── Progress bar animation ── */
+@keyframes grow { from { width: 0 } }
+.bar-grow { animation: grow 0.9s cubic-bezier(0.4,0,0.2,1) both; }
+
+/* ── Page fade in ── */
+@keyframes fadeIn { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform:none; } }
+.page-enter { animation: fadeIn 0.45s ease both; }
