@@ -14,11 +14,20 @@ SKILLS = [
     "data analysis", "data science", "statistics",
 ]
 
+_SECTION_HEADERS = {
+    "technical skills", "skills", "education", "experience", "summary",
+    "objective", "profile", "projects", "certifications", "references",
+    "work experience", "professional experience", "contact", "languages",
+    "interests", "achievements", "awards",
+}
+
 
 def _extract_name(text: str) -> str:
     for line in text.strip().splitlines():
         line = line.strip()
         if not line:
+            continue
+        if line.lower() in _SECTION_HEADERS:
             continue
         if re.match(r"^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3}$", line):
             return line
