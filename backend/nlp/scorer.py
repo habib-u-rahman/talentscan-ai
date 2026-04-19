@@ -40,9 +40,15 @@ def _match_skills(resume_text: str, jd_text: str) -> list:
     return [s for s in SKILLS if s in r and s in j]
 
 
+def _jd_skill_count(jd_text: str) -> int:
+    j = jd_text.lower()
+    return max(sum(1 for s in SKILLS if s in j), 1)
+
+
 def screen(job_description: str, resumes: list) -> dict:
-    jd_clean  = preprocess(job_description)
-    res_clean = [preprocess(r["text"]) for r in resumes]
+    jd_clean        = preprocess(job_description)
+    res_clean       = [preprocess(r["text"]) for r in resumes]
+    jd_skills_total = _jd_skill_count(job_description)
 
     vectorizer = TfidfVectorizer()
     matrix     = vectorizer.fit_transform([jd_clean] + res_clean)
@@ -50,11 +56,14 @@ def screen(job_description: str, resumes: list) -> dict:
 
     candidates = []
     for i, r in enumerate(resumes):
-        score  = round(float(sims[i]) * 100)
-        name   = _extract_name(r["text"])
-        skills = _match_skills(r["text"], job_description)
+        skills       = _match_skills(r["text"], job_description)
+        skill_ratio  = len(skills) / jd_skills_total
+        cosine_score = float(sims[i])
+        score        = max(0, min(round((cosine_score * 0.4 + skill_ratio * 0.6) * 100), 100))
+        name         = _extract_name(r["text"])
         candidates.append({"name": name, "score": score,
-                           "details": f"{len(skills)} skills matched", "skills": skills})
+                           "details": f"{len(skills)} of {jd_skills_total} required skills matched",
+                           "skills": skills})
 
     candidates.sort(key=lambda c: c["score"], reverse=True)
     return {"candidates": candidates, "pipeline": []}
