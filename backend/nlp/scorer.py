@@ -40,6 +40,12 @@ def _match_skills(resume_text: str, jd_text: str) -> list:
     return [s for s in SKILLS if s in r and s in j]
 
 
+def _missing_skills(resume_text: str, jd_text: str) -> list:
+    r = resume_text.lower()
+    j = jd_text.lower()
+    return [s for s in SKILLS if s in j and s not in r]
+
+
 def _jd_skill_count(jd_text: str) -> int:
     j = jd_text.lower()
     return max(sum(1 for s in SKILLS if s in j), 1)
