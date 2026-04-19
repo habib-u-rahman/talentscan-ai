@@ -51,14 +51,24 @@ def _jd_skill_count(jd_text: str) -> int:
     return max(sum(1 for s in SKILLS if s in j), 1)
 
 
+def _top_tfidf_terms(tfidf_vector, feature_names: list, n: int = 10) -> list:
+    scores  = tfidf_vector.toarray()[0]
+    top_idx = scores.argsort()[-n:][::-1]
+    return [
+        {"term": feature_names[i], "score": round(float(scores[i]), 3)}
+        for i in top_idx if scores[i] > 0
+    ]
+
+
 def screen(job_description: str, resumes: list) -> dict:
     jd_clean        = preprocess(job_description)
     res_clean       = [preprocess(r["text"]) for r in resumes]
     jd_skills_total = _jd_skill_count(job_description)
 
-    vectorizer = TfidfVectorizer()
-    matrix     = vectorizer.fit_transform([jd_clean] + res_clean)
-    sims       = cosine_similarity(matrix[0:1], matrix[1:])[0]
+    vectorizer    = TfidfVectorizer()
+    matrix        = vectorizer.fit_transform([jd_clean] + res_clean)
+    feature_names = vectorizer.get_feature_names_out().tolist()
+    sims          = cosine_similarity(matrix[0:1], matrix[1:])[0]
 
     candidates = []
     for i, r in enumerate(resumes):
