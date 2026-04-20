@@ -70,16 +70,46 @@ def screen(job_description: str, resumes: list) -> dict:
     feature_names = vectorizer.get_feature_names_out().tolist()
     sims          = cosine_similarity(matrix[0:1], matrix[1:])[0]
 
+    jd_top_terms = _top_tfidf_terms(matrix[0:1], feature_names)
+
     candidates = []
+    pipeline   = []
+
     for i, r in enumerate(resumes):
-        skills       = _match_skills(r["text"], job_description)
-        skill_ratio  = len(skills) / jd_skills_total
+        raw_tokens   = r["text"].split()
+        clean_tokens = res_clean[i].split()
+        matched      = _match_skills(r["text"], job_description)
+        missing      = _missing_skills(r["text"], job_description)
+        skill_ratio  = len(matched) / jd_skills_total
         cosine_score = float(sims[i])
         score        = max(0, min(round((cosine_score * 0.4 + skill_ratio * 0.6) * 100), 100))
         name         = _extract_name(r["text"])
-        candidates.append({"name": name, "score": score,
-                           "details": f"{len(skills)} of {jd_skills_total} required skills matched",
-                           "skills": skills})
+
+        candidates.append({
+            "name":    name,
+            "score":   score,
+            "details": f"{len(matched)} of {jd_skills_total} required skills matched",
+            "skills":  matched,
+        })
+
+        pipeline.append({
+            "name":              name,
+            "filename":          r["filename"],
+            "raw_preview":       r["text"][:400].strip(),
+            "raw_token_count":   len(raw_tokens),
+            "clean_token_count": len(clean_tokens),
+            "stopwords_removed": len(raw_tokens) - len(clean_tokens),
+            "sample_tokens":     clean_tokens[:20],
+            "top_tfidf":         _top_tfidf_terms(matrix[i + 1 : i + 2], feature_names),
+            "jd_top_tfidf":      jd_top_terms,
+            "cosine_sim":        round(cosine_score, 4),
+            "skill_ratio":       round(skill_ratio, 4),
+            "matched_skills":    matched,
+            "missing_skills":    missing,
+            "final_score":       score,
+        })
 
     candidates.sort(key=lambda c: c["score"], reverse=True)
-    return {"candidates": candidates, "pipeline": []}
+    pipeline.sort(key=lambda p: p["final_score"], reverse=True)
+
+    return {"candidates": candidates, "pipeline": pipeline}
