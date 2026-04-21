@@ -41,3 +41,9 @@ export async function sendChatMessage(message) {
   const response = await api.post("/chat", { message });
   return response.data;
 }
+
+export const signupUser = async (name, email, password) =>
+  (await api.post("/signup", { name, email, password })).data;
+
+export const loginUser = async (email, password) =>
+  (await api.post("/login", { email, password })).data;
