@@ -4,9 +4,7 @@ import { useNavigate } from "react-router-dom";
 function StepBadge({ n }) {
   return (
     <div className="w-8 h-8 rounded-xl bg-brand-600 text-white text-xs font-extrabold
-      flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-200">
-      {n}
-    </div>
+      flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-200">{n}</div>
   );
 }
 
@@ -27,17 +25,45 @@ function Chip({ label, color }) {
     green: "bg-emerald-50 text-emerald-700 border-emerald-200",
     red:   "bg-red-50 text-red-600 border-red-200",
     blue:  "bg-brand-50 text-brand-700 border-brand-200",
-    slate: "bg-slate-100 text-slate-600 border-slate-200",
   };
+  return <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${colors[color]}`}>{label}</span>;
+}
+
+function TfidfBar({ term, score, max }) {
+  const pct = max > 0 ? (score / max) * 100 : 0;
   return (
-    <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${colors[color]}`}>
-      {label}
-    </span>
+    <div className="flex items-center gap-3">
+      <span className="text-xs font-mono text-slate-700 w-28 truncate flex-shrink-0">{term}</span>
+      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-full bg-brand-500 rounded-full" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-xs text-slate-400 tabular-nums w-10 text-right">{score}</span>
+    </div>
+  );
+}
+
+function ScoreGauge({ score }) {
+  const color = score >= 70 ? "#10b981" : score >= 40 ? "#f59e0b" : "#ef4444";
+  const r = 44, circ = 2 * Math.PI * r;
+  const offset = circ - (score / 100) * circ;
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r={r} fill="none" stroke="#f1f5f9" strokeWidth="8" />
+        <circle cx="55" cy="55" r={r} fill="none" stroke={color} strokeWidth="8"
+          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+          transform="rotate(-90 55 55)" style={{ transition: "stroke-dashoffset 1s ease" }} />
+        <text x="55" y="60" textAnchor="middle" fontSize="20" fontWeight="800" fill={color}>{score}%</text>
+      </svg>
+      <span className="text-xs font-semibold text-slate-500">Final Score</span>
+    </div>
   );
 }
 
 function CandidatePanel({ data, index }) {
   const [open, setOpen] = useState(index === 0);
+  const tfidfMax = data.top_tfidf.length > 0 ? data.top_tfidf[0].score : 1;
+  const jdMax    = data.jd_top_tfidf.length > 0 ? data.jd_top_tfidf[0].score : 1;
 
   return (
     <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
@@ -52,9 +78,7 @@ function CandidatePanel({ data, index }) {
         <span className={`text-xs font-bold px-3 py-1 rounded-full border
           ${data.final_score >= 70 ? "text-emerald-700 bg-emerald-50 border-emerald-200"
             : data.final_score >= 40 ? "text-amber-700 bg-amber-50 border-amber-200"
-            : "text-red-600 bg-red-50 border-red-200"}`}>
-          {data.final_score}%
-        </span>
+            : "text-red-600 bg-red-50 border-red-200"}`}>{data.final_score}%</span>
         <svg className={`w-4 h-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -63,33 +87,75 @@ function CandidatePanel({ data, index }) {
 
       {open && (
         <div className="border-t border-slate-100 bg-slate-50 p-5 space-y-5">
+          <div className="flex flex-col sm:flex-row gap-6 items-center bg-white border border-slate-200 rounded-2xl p-5">
+            <ScoreGauge score={data.final_score} />
+            <div className="flex-1 space-y-3">
+              <p className="text-xs font-bold tracking-widest text-slate-400 uppercase">Score Formula</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 font-mono text-xs text-slate-700">
+                Score = (cosine x 0.4 + skill_ratio x 0.6) x 100
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[{ label: "Cosine Similarity", value: data.cosine_sim },
+                  { label: "Skill Ratio", value: data.skill_ratio }].map(({ label, value }) => (
+                  <div key={label} className="bg-brand-50 border border-brand-100 rounded-xl p-3">
+                    <p className="text-[11px] text-brand-500 font-semibold uppercase tracking-wide">{label}</p>
+                    <p className="text-lg font-extrabold text-brand-700 mt-0.5">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <SectionCard step={1} title="Text Extraction  (PyPDF2 / UTF-8 decode)">
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 font-mono text-xs
-              text-slate-600 leading-relaxed max-h-36 overflow-y-auto">
-              {data.raw_preview}...
-            </div>
-            <p className="text-xs text-slate-400 mt-2">
-              Raw tokens extracted: <span className="font-bold text-slate-600">{data.raw_token_count}</span>
-            </p>
+              text-slate-600 leading-relaxed max-h-36 overflow-y-auto">{data.raw_preview}...</div>
+            <p className="text-xs text-slate-400 mt-2">Raw tokens: <span className="font-bold text-slate-600">{data.raw_token_count}</span></p>
           </SectionCard>
 
-          <SectionCard step={2} title="Text Preprocessing  (NLTK — lowercase + stopwords + lemmatize)">
+          <SectionCard step={2} title="Text Preprocessing  (NLTK)">
             <div className="grid grid-cols-3 gap-4 mb-4">
-              {[
-                { label: "Raw Tokens",        value: data.raw_token_count,   cls: "bg-slate-100 text-slate-700" },
+              {[{ label: "Raw Tokens", value: data.raw_token_count, cls: "bg-slate-100 text-slate-700" },
                 { label: "Stopwords Removed", value: data.stopwords_removed, cls: "bg-red-50 text-red-600" },
-                { label: "Clean Tokens",      value: data.clean_token_count, cls: "bg-emerald-50 text-emerald-700" },
-              ].map(({ label, value, cls }) => (
-                <div key={label} className={`${cls} rounded-xl p-3 text-center`}>
-                  <p className="text-xl font-extrabold">{value}</p>
-                  <p className="text-[11px] font-medium mt-0.5">{label}</p>
-                </div>
+                { label: "Clean Tokens", value: data.clean_token_count, cls: "bg-emerald-50 text-emerald-700" }]
+                .map(({ label, value, cls }) => (
+                  <div key={label} className={`${cls} rounded-xl p-3 text-center`}>
+                    <p className="text-xl font-extrabold">{value}</p>
+                    <p className="text-[11px] font-medium mt-0.5">{label}</p>
+                  </div>
               ))}
             </div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Sample Clean Tokens</p>
             <div className="flex flex-wrap gap-1.5">
               {data.sample_tokens.map((t, i) => <Chip key={i} label={t} color="blue" />)}
             </div>
+          </SectionCard>
+
+          <SectionCard step={3} title="TF-IDF Vectorization  (scikit-learn TfidfVectorizer)">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Resume Top Terms</p>
+                <div className="space-y-2">
+                  {data.top_tfidf.map(({ term, score }) => <TfidfBar key={term} term={term} score={score} max={tfidfMax} />)}
+                </div>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Job Description Top Terms</p>
+                <div className="space-y-2">
+                  {data.jd_top_tfidf.map(({ term, score }) => <TfidfBar key={term} term={term} score={score} max={jdMax} />)}
+                </div>
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard step={4} title="Cosine Similarity">
+            <div className="flex items-center gap-4">
+              <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-brand-500" style={{ width: `${data.cosine_sim * 100}%` }} />
+              </div>
+              <span className="text-sm font-extrabold text-brand-700 w-14 text-right">
+                {(data.cosine_sim * 100).toFixed(1)}%
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-2">Raw value: <span className="font-mono font-bold text-slate-600">{data.cosine_sim}</span></p>
           </SectionCard>
         </div>
       )}
@@ -126,17 +192,21 @@ export default function Pipeline() {
           <div className="w-[700px] h-[220px] bg-brand-600/15 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-7xl mx-auto">
-          <span className="inline-block text-[11px] font-bold tracking-[0.15em] text-brand-400 uppercase mb-3">
-            NLP Pipeline Dashboard
-          </span>
+          <span className="inline-block text-[11px] font-bold tracking-[0.15em] text-brand-400 uppercase mb-3">NLP Pipeline Dashboard</span>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Resume Analysis Breakdown</h1>
-          <p className="mt-2 text-slate-400 text-sm max-w-xl">Step-by-step visualization of every NLP operation.</p>
+          <p className="mt-2 text-slate-400 text-sm max-w-xl">Step-by-step visualization of every NLP operation applied to each resume.</p>
         </div>
       </div>
       <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 space-y-4">
         {data.map((candidate, i) => (
           <CandidatePanel key={candidate.filename + i} data={candidate} index={i} />
         ))}
+        <div className="text-center pb-4">
+          <button onClick={() => navigate("/screener")}
+            className="px-6 py-3 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-brand-600 transition-colors">
+            Back to Screener
+          </button>
+        </div>
       </div>
     </div>
   );
