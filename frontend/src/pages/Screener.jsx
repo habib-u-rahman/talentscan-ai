@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import FileUpload    from "../components/FileUpload";
 import Spinner       from "../components/Spinner";
 import { screenResumes } from "../api/api";
@@ -100,6 +101,7 @@ function CandidateCard({ candidate, rank, onView }) {
 }
 
 export default function Screener() {
+  const navigate = useNavigate();
   const [jd,         setJd]         = useState("");
   const [files,      setFiles]      = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -122,6 +124,9 @@ export default function Screener() {
     try {
       const data = await screenResumes(jd, files);
       setCandidates(data.candidates || []);
+      if (data.pipeline) {
+        sessionStorage.setItem("pipeline_data", JSON.stringify(data.pipeline));
+      }
       setDone(true);
     } catch (e) {
       setError(e.response?.data?.message ||
