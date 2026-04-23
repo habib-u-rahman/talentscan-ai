@@ -181,26 +181,6 @@ export default function Screener() {
               </div>
             ))}
 
-            {/* Analyze button in the bar */}
-            <button
-              onClick={analyze}
-              disabled={!ready || loading}
-              className={`ml-auto px-5 py-2 rounded-xl text-xs font-bold transition-all
-                ${ready && !loading
-                  ? "bg-brand-600 text-white shadow-md shadow-brand-200 hover:bg-brand-500 active:scale-95"
-                  : "bg-slate-100 text-slate-400 cursor-not-allowed"}`}
-            >
-              {loading
-                ? <span className="flex items-center gap-1.5">
-                    <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10"
-                        stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                    </svg>
-                    Analyzing…
-                  </span>
-                : "Analyze Resumes"}
-            </button>
           </div>
         </div>
       </div>
@@ -324,6 +304,7 @@ export default function Screener() {
                 Complete both steps above to run the analysis.
               </p>
             )}
+
           </div>
 
           {/* ══════════ RIGHT PANEL ══════════ */}
