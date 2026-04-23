@@ -334,10 +334,20 @@ export default function Screener() {
                   </div>
                 </div>
                 {done && (
-                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50
-                    border border-emerald-200 px-3 py-1 rounded-full">
-                    ✓ Complete
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50
+                      border border-emerald-200 px-3 py-1 rounded-full">
+                      ✓ Complete
+                    </span>
+                    <button
+                      onClick={() => navigate("/pipeline")}
+                      className="text-xs font-bold text-brand-600 bg-brand-50
+                        border border-brand-200 px-3 py-1 rounded-full
+                        hover:bg-brand-100 transition-colors"
+                    >
+                      View Pipeline →
+                    </button>
+                  </div>
                 )}
               </div>
 
