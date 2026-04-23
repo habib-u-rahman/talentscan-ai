@@ -4,6 +4,7 @@ import Home     from "./pages/Home";
 import Screener from "./pages/Screener";
 import Chatbot  from "./pages/Chatbot";
 import About    from "./pages/About";
+import Pipeline from "./pages/Pipeline";
 
 function NotFound() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/screener" element={<Screener />} />
         <Route path="/chatbot"  element={<Chatbot />} />
         <Route path="/about"    element={<About />} />
+        <Route path="/pipeline" element={<Pipeline />} />
         <Route path="*"         element={<NotFound />} />
       </Routes>
     </BrowserRouter>
