@@ -1,17 +1,27 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Navbar   from "./components/Navbar";
-import Home     from "./pages/Home";
-import Screener from "./pages/Screener";
-import Chatbot  from "./pages/Chatbot";
-import About    from "./pages/About";
-import Pipeline from "./pages/Pipeline";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+
+import DashboardLayout from "./components/DashboardLayout";
+import Home           from "./pages/Home";
+import Screener       from "./pages/Screener";
+import Chatbot        from "./pages/Chatbot";
+import About          from "./pages/About";
+import Pipeline       from "./pages/Pipeline";
+import Login          from "./pages/Login";
+import Signup         from "./pages/Signup";
+import Landing        from "./pages/Landing";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword  from "./pages/ResetPassword";
+
+function ProtectedRoute({ children }) {
+  return localStorage.getItem("user") ? children : <Navigate to="/" replace />;
+}
 
 function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
       <h1 className="text-7xl font-extrabold text-slate-200 mb-3">404</h1>
       <p className="text-slate-500 text-lg mb-6">Page not found.</p>
-      <Link to="/"
+      <Link to="/home"
         className="px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold
           hover:bg-brand-500 transition-colors shadow-md shadow-brand-200">
         Go Home
@@ -20,17 +30,31 @@ function NotFound() {
   );
 }
 
+function Dash({ children }) {
+  return (
+    <ProtectedRoute>
+      <DashboardLayout>{children}</DashboardLayout>
+    </ProtectedRoute>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
       <Routes>
-        <Route path="/"         element={<Home />} />
-        <Route path="/screener" element={<Screener />} />
-        <Route path="/chatbot"  element={<Chatbot />} />
-        <Route path="/about"    element={<About />} />
-        <Route path="/pipeline" element={<Pipeline />} />
-        <Route path="*"         element={<NotFound />} />
+        <Route path="/"                element={<Landing />} />
+        <Route path="/login"           element={<Login />} />
+        <Route path="/signup"          element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password"  element={<ResetPassword />} />
+
+        <Route path="/home"     element={<Dash><Home /></Dash>} />
+        <Route path="/screener" element={<Dash><Screener /></Dash>} />
+        <Route path="/chatbot"  element={<Dash><Chatbot /></Dash>} />
+        <Route path="/about"    element={<Dash><About /></Dash>} />
+        <Route path="/pipeline" element={<Dash><Pipeline /></Dash>} />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
