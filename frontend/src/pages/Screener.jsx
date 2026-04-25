@@ -7,7 +7,7 @@ import { screenResumes } from "../api/api";
 /* ── Consistent inner-page hero ── */
 function PageHero({ tag, title, subtitle }) {
   return (
-    <div className="bg-slate-900 px-5 sm:px-8 pt-28 pb-14 relative overflow-hidden">
+    <div className="bg-slate-900 px-5 sm:px-8 pt-10 pb-14 relative overflow-hidden">
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[700px] h-[220px] bg-brand-600/15 rounded-full blur-3xl"/>
       </div>
@@ -128,6 +128,15 @@ export default function Screener() {
         sessionStorage.setItem("pipeline_data", JSON.stringify(data.pipeline));
       }
       setDone(true);
+      const record = {
+        id: Date.now().toString(),
+        title: jd.slice(0, 45).trim() + (jd.length > 45 ? "…" : ""),
+        date: new Date().toISOString(),
+        count: files.length,
+      };
+      const prev = JSON.parse(localStorage.getItem("screening_history") || "[]");
+      localStorage.setItem("screening_history", JSON.stringify([record, ...prev]));
+      window.dispatchEvent(new Event("historyUpdated"));
     } catch (e) {
       setError(e.response?.data?.message ||
         "Cannot reach the backend. Make sure Flask is running on port 5000.");
@@ -151,7 +160,7 @@ export default function Screener() {
       />
 
       {/* ── Step progress bar ── */}
-      <div className="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-sm">
+      <div className="bg-white border-b border-slate-200 sticky top-14 lg:top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto px-5 sm:px-8 py-3">
           <div className="flex items-center gap-3">
             {[
@@ -313,7 +322,7 @@ export default function Screener() {
           </div>
 
           {/* ══════════ RIGHT PANEL ══════════ */}
-          <div className="sticky top-28">
+          <div className="sticky top-14 lg:top-14">
 
             {/* Results header card */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">

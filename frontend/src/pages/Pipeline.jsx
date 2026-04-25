@@ -267,7 +267,7 @@ export default function Pipeline() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-slate-900 px-5 sm:px-8 pt-28 pb-14 relative overflow-hidden">
+      <div className="bg-slate-900 px-5 sm:px-8 pt-10 pb-14 relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-[700px] h-[220px] bg-brand-600/15 rounded-full blur-3xl" />
         </div>

@@ -56,7 +56,7 @@ export default function Home() {
     <div className="bg-white">
 
       {/* ━━━ HERO ━━━ */}
-      <section className="relative bg-slate-900 overflow-hidden pt-24 pb-16 px-5 sm:px-8">
+      <section className="relative bg-slate-900 overflow-hidden pt-10 pb-16 px-5 sm:px-8">
 
         {/* Background glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px]
