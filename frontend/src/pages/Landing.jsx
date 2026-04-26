@@ -303,10 +303,10 @@ export default function Landing() {
             {/* mock results */}
             <div className="p-5 space-y-3">
               {[
-                { name: "Sarah Johnson",  score: 94, color: "bg-emerald-500", badge: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", delay: 0.9 },
-                { name: "Michael Chen",   score: 78, color: "bg-blue-500",    badge: "text-blue-400 bg-blue-400/10 border-blue-400/20",          delay: 1.0 },
-                { name: "Priya Sharma",   score: 61, color: "bg-amber-500",   badge: "text-amber-400 bg-amber-400/10 border-amber-400/20",        delay: 1.1 },
-                { name: "Alex Thompson",  score: 45, color: "bg-slate-500",   badge: "text-slate-400 bg-slate-400/10 border-slate-400/20",        delay: 1.2 },
+                { name: "Habib Ur Rahman",  score: 94, color: "bg-emerald-500", badge: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", delay: 0.9 },
+                { name: "Alishba Khalid",  score: 78, color: "bg-blue-500",   badge: "text-blue-400 bg-blue-400/10 border-blue-400/20",           delay: 1.0 },
+                { name: "Zehra Nisar",     score: 61, color: "bg-amber-500",  badge: "text-amber-400 bg-amber-400/10 border-amber-400/20",         delay: 1.1 },
+                { name: "Wajeeh Ur Rahman",score: 45, color: "bg-slate-500",  badge: "text-slate-400 bg-slate-400/10 border-slate-400/20",         delay: 1.2 },
               ].map((c, i) => (
                 <motion.div
                   key={c.name}
@@ -471,30 +471,7 @@ export default function Landing() {
         </FadeUp>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="border-t border-white/[0.06] px-6 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-              </svg>
-            </div>
-            <span className="font-bold text-sm text-white">
-              Talant<span className="text-violet-400">Scan</span>
-            </span>
-          </div>
-          <p className="text-slate-600 text-xs">
-            © {new Date().getFullYear()} TalantScan AI · BSCS Semester 6 NLP Project
-          </p>
-          <div className="flex items-center gap-5">
-            <Link to="/login"  className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Sign In</Link>
-            <Link to="/signup" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Sign Up</Link>
-          </div>
-        </div>
-      </footer>
+      
 
     </div>
   );

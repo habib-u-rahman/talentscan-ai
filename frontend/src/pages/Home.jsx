@@ -136,9 +136,9 @@ export default function Home() {
 
               {/* Mock candidate rows */}
               {[
-                { name: "Sarah Johnson",  score: 94, color: "bg-emerald-500" },
-                { name: "Michael Chen",   score: 78, color: "bg-brand-500"   },
-                { name: "Priya Sharma",   score: 61, color: "bg-amber-400"   },
+                { name: "Habib Ur Rahman",  score: 94, color: "bg-emerald-500" },
+                { name: "Alishba Khalid",   score: 78, color: "bg-brand-500"   },
+                { name: "Zehra Nisar",      score: 61, color: "bg-amber-400"   },
               ].map(({ name, score, color }) => (
                 <div key={name}
                   className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 mb-2
@@ -163,7 +163,7 @@ export default function Home() {
                 <div className="bg-brand-600/20 border border-brand-500/20 rounded-xl px-4 py-3">
                   <p className="text-xs text-slate-400 mb-1">AI Assistant</p>
                   <p className="text-sm text-white/80">
-                    Sarah Johnson is your top match at <span className="text-brand-400 font-semibold">94%</span> — strong Python and ML skills.
+                    Habib Ur Rahman is your top match at <span className="text-brand-400 font-semibold">94%</span> — strong Python and ML skills.
                   </p>
                 </div>
               </div>
