@@ -1,5 +1,10 @@
-from fastapi import FastAPI, File, Form, UploadFile
+import hashlib
+import json
+import os
+
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from typing import List
 
 from nlp.extractor import extract_text
@@ -17,7 +22,50 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── simple user store ──────────────────────────────────────────────────────────
+USERS_FILE = os.path.join(os.path.dirname(__file__), "users.json")
 
+def _load_users() -> list:
+    if not os.path.exists(USERS_FILE):
+        return []
+    with open(USERS_FILE, "r") as f:
+        return json.load(f)
+
+def _save_users(users: list):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
+
+def _hash(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+class AuthBody(BaseModel):
+    name: str | None = None
+    email: str
+    password: str
+
+
+# ── auth endpoints ─────────────────────────────────────────────────────────────
+@app.post("/api/signup")
+def signup(body: AuthBody):
+    users = _load_users()
+    if any(u["email"] == body.email for u in users):
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
+    users.append({"name": body.name or "", "email": body.email, "password": _hash(body.password)})
+    _save_users(users)
+    return {"message": "Account created successfully! Please sign in."}
+
+
+@app.post("/api/login")
+def login(body: AuthBody):
+    users = _load_users()
+    user = next((u for u in users if u["email"] == body.email), None)
+    if not user or user["password"] != _hash(body.password):
+        raise HTTPException(status_code=401, detail="Incorrect email or password.")
+    return {"user": {"name": user["name"], "email": user["email"]}}
+
+
+# ── NLP endpoints ──────────────────────────────────────────────────────────────
 @app.post("/api/screen")
 async def screen_resumes(
     job_description: str = Form(...),
