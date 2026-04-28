@@ -37,3 +37,4 @@ desktop.ini
 
 # ── Old folder (to be deleted manually) ──
 talant-scan-ai/
+frontend/.env
