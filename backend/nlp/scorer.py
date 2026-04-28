@@ -2,6 +2,7 @@ import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from .preprocessor import preprocess
+from .parser import parse_resume
 
 SKILLS = [
     "python", "java", "javascript", "typescript", "c++", "c#", "go", "rust",
@@ -90,6 +91,7 @@ def screen(job_description: str, resumes: list) -> dict:
             "score":   score,
             "details": f"{len(matched)} of {jd_skills_total} required skills matched",
             "skills":  matched,
+            "parsed":  parse_resume(r["text"]),
         })
 
         pipeline.append({
@@ -112,4 +114,13 @@ def screen(job_description: str, resumes: list) -> dict:
     candidates.sort(key=lambda c: c["score"], reverse=True)
     pipeline.sort(key=lambda p: p["final_score"], reverse=True)
 
-    return {"candidates": candidates, "pipeline": pipeline}
+    scores = [c["score"] for c in candidates]
+    avg_score = round(sum(scores) / len(scores), 1) if scores else None
+    top_score = float(max(scores)) if scores else None
+
+    return {
+        "candidates": candidates,
+        "pipeline":   pipeline,
+        "avg_score":  avg_score,
+        "top_score":  top_score,
+    }

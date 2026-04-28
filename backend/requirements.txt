@@ -4,3 +4,12 @@ python-multipart
 PyPDF2
 scikit-learn
 nltk
+spacy
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]
+python-jose[cryptography]
+python-dotenv
+sentence-transformers
+numpy
+requests
