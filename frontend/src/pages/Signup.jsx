@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { signupUser } from "../api/api";
+import { Link } from "react-router-dom";
+import { signupUser, resendVerification } from "../api/api";
 import AuthLayout from "../components/AuthLayout";
 
 function Spinner() {
@@ -13,14 +13,16 @@ function Spinner() {
 }
 
 export default function Signup() {
-  const [name,       setName]       = useState("");
-  const [email,      setEmail]      = useState("");
-  const [password,   setPassword]   = useState("");
-  const [error,      setError]      = useState(null);
-  const [loading,    setLoading]    = useState(false);
-  const [googleNote, setGoogleNote] = useState(false);
-  const [shakeKey,   setShakeKey]   = useState(0);
-  const nav = useNavigate();
+  const [name,         setName]         = useState("");
+  const [email,        setEmail]        = useState("");
+  const [password,     setPassword]     = useState("");
+  const [error,        setError]        = useState(null);
+  const [loading,      setLoading]      = useState(false);
+  const [googleNote,   setGoogleNote]   = useState(false);
+  const [shakeKey,     setShakeKey]     = useState(0);
+  const [done,         setDone]         = useState(false);
+  const [resendSent,   setResendSent]   = useState(false);
+  const [resendLoading,setResendLoading]= useState(false);
 
   const showError = msg => { setError(msg); setShakeKey(k => k + 1); };
 
@@ -29,8 +31,8 @@ export default function Signup() {
     if (password.length < 6) { showError("Password must be at least 6 characters."); return; }
     setLoading(true); setError(null);
     try {
-      const r = await signupUser(name, email, password);
-      nav("/login", { state: { message: r.message || "Account created! Please sign in." } });
+      await signupUser(name, email, password);
+      setDone(true);
     } catch (e) {
       showError(e.response?.data?.detail || "Signup failed. Please try again.");
     } finally {
@@ -38,8 +40,95 @@ export default function Signup() {
     }
   };
 
+  const handleResend = async () => {
+    setResendLoading(true);
+    try {
+      await resendVerification(email);
+      setResendSent(true);
+    } catch {
+      /* silently ignore */
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleKey = e => e.key === "Enter" && submit();
 
+  /* ── Success: check your email ── */
+  if (done) {
+    return (
+      <AuthLayout>
+        <div className="bg-white border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/60 p-8 auth-card">
+          <div className="success-enter text-center py-2">
+
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-brand-50 border-2 border-brand-200
+              flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+
+            <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Check your inbox!</h2>
+            <p className="text-sm text-slate-500 max-w-xs mx-auto leading-relaxed mb-1">
+              We sent a verification link to
+            </p>
+            <p className="text-sm font-bold text-brand-600 mb-5">{email}</p>
+
+            {/* Steps */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left mb-6 space-y-3">
+              {[
+                ["1", "Open the email from TalantScan AI"],
+                ["2", "Click the \"Verify Email Address\" button"],
+                ["3", "Come back here and sign in"],
+              ].map(([n, label]) => (
+                <div key={n} className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs
+                    font-extrabold flex items-center justify-center flex-shrink-0">
+                    {n}
+                  </span>
+                  <span className="text-sm text-slate-600">{label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Resend */}
+            {resendSent ? (
+              <p className="text-xs text-emerald-600 font-semibold mb-4">
+                ✓ New verification email sent!
+              </p>
+            ) : (
+              <p className="text-xs text-slate-400 mb-4">
+                Didn't receive it?{" "}
+                <button
+                  onClick={handleResend}
+                  disabled={resendLoading}
+                  className="text-brand-500 font-semibold hover:underline disabled:opacity-50"
+                >
+                  {resendLoading ? "Sending…" : "Resend email"}
+                </button>
+              </p>
+            )}
+
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-7 py-3 bg-brand-600 text-white
+                text-sm font-bold rounded-xl hover:bg-brand-500 shadow-lg shadow-brand-300/40
+                active:scale-[.98] transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              Go to Sign In
+            </Link>
+          </div>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  /* ── Sign-up form ── */
   return (
     <AuthLayout>
       <div className="bg-white border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/60 p-6 auth-card">

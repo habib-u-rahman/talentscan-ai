@@ -212,7 +212,7 @@ export default function AuthLayout({ children }) {
       </div>
 
       {/* Right — form panel */}
-      <div className="flex-1 flex items-center justify-center bg-slate-50 px-8 py-4 min-h-screen overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center bg-slate-50 px-4 sm:px-8 py-6 min-h-screen overflow-y-auto">
         <div className="w-full max-w-md">
 
           {/* Mobile brand (hidden on desktop) */}

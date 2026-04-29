@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
+import { forgotPassword } from "../api/api";
 
 function Spinner() {
   return (
@@ -24,9 +25,14 @@ export default function ForgotPassword() {
     if (!email) { showError("Please enter your email address."); return; }
     if (!/\S+@\S+\.\S+/.test(email)) { showError("Please enter a valid email address."); return; }
     setLoading(true); setError(null);
-    await new Promise(r => setTimeout(r, 1200));
-    setLoading(false);
-    setSent(true);
+    try {
+      await forgotPassword(email);
+      setSent(true);
+    } catch (err) {
+      showError(err?.response?.data?.detail || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +52,7 @@ export default function ForgotPassword() {
               </div>
               <h1 className="text-2xl font-extrabold text-slate-900">Forgot password?</h1>
               <p className="text-sm text-slate-400 mt-1 max-w-xs mx-auto">
-                Enter your email and we'll send you a reset link.
+                Enter your email and we'll send a reset link straight to your inbox.
               </p>
             </div>
 
@@ -89,7 +95,7 @@ export default function ForgotPassword() {
                     : "bg-brand-600 text-white hover:bg-brand-500 shadow-lg shadow-brand-300/40 active:scale-[.98]"}`}
               >
                 {loading
-                  ? <span className="flex items-center justify-center gap-2"><Spinner />Sending link…</span>
+                  ? <span className="flex items-center justify-center gap-2"><Spinner />Sending…</span>
                   : "Send Reset Link"}
               </button>
 
@@ -108,25 +114,34 @@ export default function ForgotPassword() {
         ) : (
           /* ── Success state ── */
           <div className="success-enter text-center py-4">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border-2 border-emerald-200
+            <div className="w-16 h-16 rounded-2xl bg-brand-50 border-2 border-brand-200
               flex items-center justify-center mx-auto mb-5">
-              <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
             </div>
+
             <h2 className="text-xl font-extrabold text-slate-900 mb-2">Check your inbox</h2>
             <p className="text-sm text-slate-500 max-w-xs mx-auto leading-relaxed mb-1">
-              We've sent a password reset link to
+              We sent a password reset link to
             </p>
-            <p className="text-sm font-bold text-brand-600 mb-6">{email}</p>
+            <p className="text-sm font-bold text-brand-600 mb-5">{email}</p>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 text-left">
+              <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                ⚠️ The link expires in <strong>1 hour</strong>. Check your spam folder if you don't see it.
+              </p>
+            </div>
+
             <p className="text-xs text-slate-400 mb-7">
-              Didn't get it? Check your spam folder or{" "}
+              Didn't receive it?{" "}
               <button onClick={() => setSent(false)}
                 className="text-brand-500 font-semibold hover:underline">
-                try again
-              </button>.
+                Try again
+              </button>
             </p>
+
             <Link to="/login"
               className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white
                 text-sm font-bold rounded-xl hover:bg-brand-500 shadow-lg shadow-brand-300/40

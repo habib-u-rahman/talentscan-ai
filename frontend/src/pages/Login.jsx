@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { loginUser } from "../api/api";
+import { loginUser, resendVerification } from "../api/api";
 import AuthLayout from "../components/AuthLayout";
 
 function Spinner() {
@@ -13,13 +13,16 @@ function Spinner() {
 }
 
 export default function Login() {
-  const [email,      setEmail]      = useState("");
-  const [password,   setPassword]   = useState("");
-  const [error,      setError]      = useState(null);
-  const [success,    setSuccess]    = useState(null);
-  const [loading,    setLoading]    = useState(false);
-  const [googleNote, setGoogleNote] = useState(false);
-  const [shakeKey,   setShakeKey]   = useState(0);
+  const [email,         setEmail]         = useState("");
+  const [password,      setPassword]      = useState("");
+  const [error,         setError]         = useState(null);
+  const [success,       setSuccess]       = useState(null);
+  const [loading,       setLoading]       = useState(false);
+  const [googleNote,    setGoogleNote]    = useState(false);
+  const [shakeKey,      setShakeKey]      = useState(0);
+  const [notVerified,   setNotVerified]   = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent,    setResendSent]    = useState(false);
   const nav      = useNavigate();
   const location = useLocation();
 
@@ -31,15 +34,32 @@ export default function Login() {
 
   const submit = async () => {
     if (!email || !password) { showError("Please fill in all fields."); return; }
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setNotVerified(false);
     try {
       const r = await loginUser(email, password);
       localStorage.setItem("user", JSON.stringify(r.user || {}));
       nav("/home");
     } catch (e) {
-      showError(e.response?.data?.detail || "Incorrect email or password.");
+      const detail = e.response?.data?.detail || "";
+      if (detail === "EMAIL_NOT_VERIFIED") {
+        setNotVerified(true);
+      } else {
+        showError(detail || "Incorrect email or password.");
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    try {
+      await resendVerification(email);
+      setResendSent(true);
+    } catch {
+      /* silently ignore */
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -68,6 +88,34 @@ export default function Login() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
             </svg>
             <span className="text-xs text-emerald-700 font-medium">{success}</span>
+          </div>
+        )}
+
+        {/* Email not verified banner */}
+        {notVerified && (
+          <div className="success-enter bg-amber-50 border border-amber-200 rounded-xl
+            px-4 py-3 mb-3">
+            <div className="flex items-start gap-2.5 mb-2">
+              <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                Your email address hasn't been verified yet. Please check your inbox and click the verification link.
+              </p>
+            </div>
+            {resendSent ? (
+              <p className="text-xs text-emerald-600 font-semibold pl-6">✓ New verification email sent!</p>
+            ) : (
+              <button
+                onClick={handleResend}
+                disabled={resendLoading || !email}
+                className="ml-6 text-xs text-amber-700 font-bold underline underline-offset-2
+                  hover:text-amber-900 transition-colors disabled:opacity-50"
+              >
+                {resendLoading ? "Sending…" : "Resend verification email"}
+              </button>
+            )}
           </div>
         )}
 
@@ -123,7 +171,7 @@ export default function Login() {
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => { setEmail(e.target.value); setNotVerified(false); setResendSent(false); }}
               onKeyDown={e => e.key === "Enter" && submit()}
               className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800
                 bg-slate-50/50 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-all"

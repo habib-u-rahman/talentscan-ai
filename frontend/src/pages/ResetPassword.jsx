@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
+import { resetPassword } from "../api/api";
 
 function Spinner() {
   return (
@@ -18,14 +19,17 @@ function EyeIcon({ open }) {
 }
 
 export default function ResetPassword() {
-  const [password,  setPassword]  = useState("");
-  const [confirm,   setConfirm]   = useState("");
-  const [done,      setDone]      = useState(false);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState(null);
-  const [shakeKey,  setShakeKey]  = useState(0);
-  const [showPass,  setShowPass]  = useState(false);
-  const [showConf,  setShowConf]  = useState(false);
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") || "";
+
+  const [password, setPassword] = useState("");
+  const [confirm,  setConfirm]  = useState("");
+  const [done,     setDone]     = useState(false);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState(null);
+  const [shakeKey, setShakeKey] = useState(0);
+  const [showPass, setShowPass] = useState(false);
+  const [showConf, setShowConf] = useState(false);
   const nav = useNavigate();
 
   const strength = (() => {
@@ -44,15 +48,46 @@ export default function ResetPassword() {
 
   const showError = msg => { setError(msg); setShakeKey(k => k + 1); };
 
+  if (!token) {
+    return (
+      <AuthLayout>
+        <div className="bg-white border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/60 p-8 text-center auth-card">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 border-2 border-red-200
+            flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h1 className="text-xl font-extrabold text-slate-900 mb-2">Invalid Link</h1>
+          <p className="text-sm text-slate-500 mb-6">
+            This reset link is missing a token. Please request a new password reset.
+          </p>
+          <Link to="/forgot-password"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white
+              text-sm font-bold rounded-xl hover:bg-brand-500 shadow-lg shadow-brand-300/40
+              active:scale-[.98] transition-all">
+            Request New Link
+          </Link>
+        </div>
+      </AuthLayout>
+    );
+  }
+
   const submit = async () => {
     if (!password || !confirm) { showError("Please fill in all fields."); return; }
     if (password.length < 6)   { showError("Password must be at least 6 characters."); return; }
     if (password !== confirm)   { showError("Passwords do not match."); return; }
     setLoading(true); setError(null);
-    await new Promise(r => setTimeout(r, 1000));
-    setLoading(false);
-    setDone(true);
-    setTimeout(() => nav("/login", { state: { message: "Password reset! Please sign in with your new password." } }), 2000);
+    try {
+      await resetPassword(token, password);
+      setDone(true);
+      setTimeout(() => nav("/login", { state: { message: "Password reset! Please sign in with your new password." } }), 2000);
+    } catch (err) {
+      showError(err?.response?.data?.detail || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
