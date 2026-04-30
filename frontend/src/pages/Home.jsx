@@ -174,7 +174,7 @@ export default function Home() {
       </section>
 
       {/* ━━━ FEATURES ━━━ */}
-      <section className="py-24 px-5 bg-white">
+      <section className="py-12 sm:py-20 px-5 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <Label>Features</Label>
@@ -206,7 +206,7 @@ export default function Home() {
       </section>
 
       {/* ━━━ HOW IT WORKS ━━━ */}
-      <section className="py-24 px-5 bg-slate-50">
+      <section className="py-12 sm:py-24 px-5 bg-slate-50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <Label>Process</Label>
@@ -248,8 +248,8 @@ export default function Home() {
       </section>
 
       {/* ━━━ BOTTOM CTA ━━━ */}
-      <section className="py-20 px-5 bg-white">
-        <div className="max-w-4xl mx-auto bg-slate-900 rounded-3xl p-12 sm:p-16
+      <section className="py-10 sm:py-20 px-5 bg-white">
+        <div className="max-w-4xl mx-auto bg-slate-900 rounded-3xl p-6 sm:p-12
           text-center relative overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-[500px] h-[300px] bg-brand-600/20 rounded-full blur-3xl"/>

@@ -16,7 +16,7 @@ export default function FileUpload({ files, onChange }) {
         onDragOver={e => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
         onDrop={e => { e.preventDefault(); setDrag(false); merge(e.dataTransfer.files); }}
-        className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center
+        className={`cursor-pointer rounded-xl border-2 border-dashed p-5 sm:p-8 text-center
           select-none transition-all duration-150
           ${drag
             ? "border-brand-400 bg-brand-50 scale-[1.01]"
@@ -60,7 +60,7 @@ export default function FileUpload({ files, onChange }) {
               </span>
               <button
                 onClick={() => onChange(files.filter(f => f.name !== file.name))}
-                className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500
+                className="opacity-60 sm:opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500
                   transition-all flex-shrink-0"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

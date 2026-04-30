@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getHistory, clearHistory as clearHistoryApi, logoutUser } from "../api/api";
 
 const NAV = [
   {
@@ -35,6 +36,14 @@ const NAV = [
     ),
   },
   {
+    to: "/analytics", label: "Analytics",
+    icon: (
+      <svg className="w-[18px] h-[18px] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+    ),
+  },
+  {
     to: "/about", label: "About",
     icon: (
       <svg className="w-[18px] h-[18px] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -43,11 +52,6 @@ const NAV = [
     ),
   },
 ];
-
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem("screening_history") || "[]"); }
-  catch { return []; }
-}
 
 function timeAgo(isoDate) {
   const diff = Date.now() - new Date(isoDate).getTime();
@@ -62,27 +66,31 @@ function timeAgo(isoDate) {
 export default function Sidebar({ open, onClose }) {
   const { pathname } = useLocation();
   const nav          = useNavigate();
-  const [history, setHistory] = useState(getHistory);
+  const [history, setHistory] = useState([]);
 
-  useEffect(() => {
-    const refresh = () => setHistory(getHistory());
-    window.addEventListener("historyUpdated", refresh);
-    return () => window.removeEventListener("historyUpdated", refresh);
+  const fetchHistory = useCallback(() => {
+    getHistory().then(setHistory).catch(() => {});
   }, []);
 
-  const user     = (() => { try { return JSON.parse(localStorage.getItem("user") || "{}"); } catch { return {}; } })();
-  const initials = (user.name || user.email || "U").slice(0, 2).toUpperCase();
+  useEffect(() => {
+    fetchHistory();
+    window.addEventListener("historyUpdated", fetchHistory);
+    return () => window.removeEventListener("historyUpdated", fetchHistory);
+  }, [fetchHistory]);
+
+  const user        = (() => { try { return JSON.parse(localStorage.getItem("user") || "{}"); } catch { return {}; } })();
+  const initials    = (user.name || user.email || "U").slice(0, 2).toUpperCase();
   const displayName = user.name || "User";
 
   const logout = () => {
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("pipeline_data");
+    logoutUser();
     nav("/");
   };
 
-  const clearHistory = () => {
-    localStorage.removeItem("screening_history");
-    setHistory([]);
+  const handleClearHistory = () => {
+    clearHistoryApi()
+      .then(() => setHistory([]))
+      .catch(() => {});
   };
 
   return (
@@ -196,7 +204,7 @@ export default function Sidebar({ open, onClose }) {
             </p>
             {history.length > 0 && (
               <button
-                onClick={clearHistory}
+                onClick={handleClearHistory}
                 className="text-[10px] text-slate-600 hover:text-rose-400 transition-colors font-medium"
               >
                 Clear all
@@ -224,6 +232,7 @@ export default function Sidebar({ open, onClose }) {
                 <Link
                   key={item.id}
                   to="/screener"
+                  state={{ historyItem: item }}
                   onClick={onClose}
                   className="group flex items-start gap-2.5 px-2 py-2 rounded-xl
                     hover:bg-white/[0.06] transition-colors"
@@ -242,7 +251,7 @@ export default function Sidebar({ open, onClose }) {
                       {item.title}
                     </p>
                     <p className="text-[10px] text-slate-600 mt-0.5">
-                      {timeAgo(item.date)} · {item.count} resume{item.count !== 1 ? "s" : ""}
+                      {timeAgo(item.created_at)} · {item.resume_count} resume{item.resume_count !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </Link>

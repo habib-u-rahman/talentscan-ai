@@ -6,11 +6,13 @@ import Screener       from "./pages/Screener";
 import Chatbot        from "./pages/Chatbot";
 import About          from "./pages/About";
 import Pipeline       from "./pages/Pipeline";
+import Analytics      from "./pages/Analytics";
 import Login          from "./pages/Login";
 import Signup         from "./pages/Signup";
 import Landing        from "./pages/Landing";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword  from "./pages/ResetPassword";
+import VerifyEmail    from "./pages/VerifyEmail";
 
 function ProtectedRoute({ children }) {
   return localStorage.getItem("user") ? children : <Navigate to="/" replace />;
@@ -47,12 +49,14 @@ export default function App() {
         <Route path="/signup"          element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password"  element={<ResetPassword />} />
+        <Route path="/verify-email"    element={<VerifyEmail />} />
 
         <Route path="/home"     element={<Dash><Home /></Dash>} />
         <Route path="/screener" element={<Dash><Screener /></Dash>} />
         <Route path="/chatbot"  element={<Dash><Chatbot /></Dash>} />
         <Route path="/about"    element={<Dash><About /></Dash>} />
-        <Route path="/pipeline" element={<Dash><Pipeline /></Dash>} />
+        <Route path="/pipeline"   element={<Dash><Pipeline /></Dash>} />
+        <Route path="/analytics"  element={<Dash><Analytics /></Dash>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

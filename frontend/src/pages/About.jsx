@@ -151,7 +151,7 @@ export default function About() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* What it does */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-8">
             <span className="inline-block text-[11px] font-bold tracking-[0.15em]
               text-brand-500 uppercase mb-3">Overview</span>
             <h2 className="text-2xl font-extrabold text-slate-900 mb-5">What does it do?</h2>
@@ -168,7 +168,7 @@ export default function About() {
           </div>
 
           {/* ── Key Features — redesigned ── */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-8">
             <span className="inline-block text-[11px] font-bold tracking-[0.15em]
               text-brand-500 uppercase mb-3">Key Features</span>
             <h2 className="text-2xl font-extrabold text-slate-900 mb-6">Why use it?</h2>
@@ -200,7 +200,7 @@ export default function About() {
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
 
           {/* Section header */}
-          <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/60">
+          <div className="px-5 sm:px-8 py-4 sm:py-6 border-b border-slate-100 bg-slate-50/60">
             <span className="inline-block text-[11px] font-bold tracking-[0.15em]
               text-brand-500 uppercase mb-2">Process</span>
             <h2 className="text-2xl font-extrabold text-slate-900">How it works</h2>
@@ -209,7 +209,7 @@ export default function About() {
             </p>
           </div>
 
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {steps.map(({ n, title, desc, icon }, i) => (
                 <div key={n}

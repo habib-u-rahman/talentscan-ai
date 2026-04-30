@@ -81,7 +81,7 @@ function CandidatePanel({ data, index }) {
     <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-4 px-6 py-4 bg-white hover:bg-slate-50
+        className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 bg-white hover:bg-slate-50
           transition-colors text-left"
       >
         <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 text-xs font-extrabold
@@ -147,7 +147,7 @@ function CandidatePanel({ data, index }) {
           </SectionCard>
 
           <SectionCard step={2} title="Text Preprocessing  (NLTK — lowercase + stopwords + lemmatize)">
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               {[
                 { label: "Raw Tokens",        value: data.raw_token_count,   color: "bg-slate-100 text-slate-700" },
                 { label: "Stopwords Removed", value: data.stopwords_removed, color: "bg-red-50 text-red-600" },
@@ -292,7 +292,7 @@ export default function Pipeline() {
             { label: "Avg Score",
               value: `${Math.round(data.reduce((s, d) => s + d.final_score, 0) / data.length)}%` },
           ].map(({ label, value }) => (
-            <div key={label} className="px-6 py-4 text-center">
+            <div key={label} className="px-3 sm:px-6 py-3 sm:py-4 text-center">
               <p className="text-2xl font-extrabold text-slate-900">{value}</p>
               <p className="text-xs text-slate-400 font-medium mt-0.5">{label}</p>
             </div>
