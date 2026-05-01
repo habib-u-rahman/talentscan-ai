@@ -6,10 +6,11 @@ const getTime = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 const SUGGESTIONS = [
-  { icon: "🏆", text: "Who is the best candidate?" },
-  { icon: "🐍", text: "Which resume has Python skills?" },
-  { icon: "⚖️",  text: "Compare the top 2 candidates" },
-  { icon: "📊", text: "What is the average match score?" },
+  { icon: "🏆", text: "What is resume screening" },
+  { icon: "🐍", text: "How does scoring work?" },
+  { icon: "⚖️",  text: "How does NLP extract skills?" },
+  { icon: "📊", text: "How does NLP extract skills?" },
+  { icon:"" , text: "What is the best candidate selection process?" },
 ];
 
 const INITIAL = [{
