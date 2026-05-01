@@ -1,8 +1,51 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import FileUpload    from "../components/FileUpload";
 import Spinner       from "../components/Spinner";
-import { screenResumes } from "../api/api";
+import { screenResumes, saveHistory } from "../api/api";
+
+/* ── Parsed profile card (shown in candidate modal) ── */
+function ParsedProfile({ parsed }) {
+  const { email, phone, education, experience_years, linkedin, github } = parsed;
+  const hasAny = email || phone || education?.length || experience_years || linkedin || github;
+  if (!hasAny) return null;
+
+  const Row = ({ icon, children }) => (
+    <div className="flex items-start gap-2.5">
+      <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-slate-100 text-slate-500
+        flex items-center justify-center text-sm mt-0.5">{icon}</span>
+      <span className="text-sm text-slate-700 leading-snug break-all">{children}</span>
+    </div>
+  );
+
+  return (
+    <div className="p-4 bg-brand-50 border border-brand-100 rounded-2xl space-y-2.5">
+      <p className="text-[11px] font-bold tracking-widest text-brand-500 uppercase mb-1">
+        Extracted Profile
+      </p>
+      {email            && <Row icon="✉">  {email}</Row>}
+      {phone            && <Row icon="📱"> {phone}</Row>}
+      {experience_years && <Row icon="💼"> {experience_years} year{experience_years !== 1 ? "s" : ""} of experience</Row>}
+      {education?.length > 0 && (
+        <Row icon="🎓">
+          {education.join(" · ")}
+        </Row>
+      )}
+      {linkedin && (
+        <Row icon="🔗">
+          <a href={`https://${linkedin}`} target="_blank" rel="noreferrer"
+            className="text-brand-600 hover:underline">{linkedin}</a>
+        </Row>
+      )}
+      {github && (
+        <Row icon="💻">
+          <a href={`https://${github}`} target="_blank" rel="noreferrer"
+            className="text-brand-600 hover:underline">{github}</a>
+        </Row>
+      )}
+    </div>
+  );
+}
 
 /* ── Consistent inner-page hero ── */
 function PageHero({ tag, title, subtitle }) {
@@ -52,8 +95,8 @@ function CandidateCard({ candidate, rank, onView }) {
       : "text-red-600 bg-red-50 border-red-200";
 
   return (
-    <div className="group flex items-center gap-4 bg-white border border-slate-200
-      rounded-2xl px-5 py-4 hover:border-brand-200 hover:shadow-md
+    <div className="group flex items-center gap-3 sm:gap-4 bg-white border border-slate-200
+      rounded-2xl px-3 sm:px-5 py-3 sm:py-4 hover:border-brand-200 hover:shadow-md
       hover:shadow-brand-50 transition-all duration-200">
 
       {/* Rank / medal */}
@@ -101,14 +144,26 @@ function CandidateCard({ candidate, rank, onView }) {
 }
 
 export default function Screener() {
-  const navigate = useNavigate();
-  const [jd,         setJd]         = useState("");
-  const [files,      setFiles]      = useState([]);
-  const [candidates, setCandidates] = useState([]);
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState(null);
-  const [selected,   setSelected]   = useState(null);
-  const [done,       setDone]       = useState(false);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const [jd,          setJd]          = useState("");
+  const [files,       setFiles]       = useState([]);
+  const [candidates,  setCandidates]  = useState([]);
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState(null);
+  const [selected,    setSelected]    = useState(null);
+  const [done,        setDone]        = useState(false);
+  const [fromHistory, setFromHistory] = useState(null);
+
+  /* Restore full screening results when navigating from a sidebar history item */
+  useEffect(() => {
+    const item = location.state?.historyItem;
+    if (!item) return;
+    if (item.job_description) setJd(item.job_description);
+    if (item.results?.length)  { setCandidates(item.results); setDone(true); }
+    setFromHistory(item);
+    window.history.replaceState({}, "");
+  }, [location.state]);
 
   const ready = jd.trim().length > 0 && files.length > 0;
 
@@ -128,15 +183,10 @@ export default function Screener() {
         sessionStorage.setItem("pipeline_data", JSON.stringify(data.pipeline));
       }
       setDone(true);
-      const record = {
-        id: Date.now().toString(),
-        title: jd.slice(0, 45).trim() + (jd.length > 45 ? "…" : ""),
-        date: new Date().toISOString(),
-        count: files.length,
-      };
-      const prev = JSON.parse(localStorage.getItem("screening_history") || "[]");
-      localStorage.setItem("screening_history", JSON.stringify([record, ...prev]));
-      window.dispatchEvent(new Event("historyUpdated"));
+      const title = jd.slice(0, 45).trim() + (jd.length > 45 ? "…" : "");
+      saveHistory(title, files.length, jd, data.avg_score ?? null, data.top_score ?? null, data.candidates ?? null)
+        .then(() => window.dispatchEvent(new Event("historyUpdated")))
+        .catch(() => {});
     } catch (e) {
       setError(e.response?.data?.message ||
         "Cannot reach the backend. Make sure Flask is running on port 5000.");
@@ -158,6 +208,33 @@ export default function Screener() {
         title="Screen & Rank Candidates"
         subtitle="Paste a job description, upload resumes, and get AI-powered rankings in seconds."
       />
+
+      {/* ── History loaded banner ── */}
+      {fromHistory && (
+        <div className="bg-brand-50 border-b border-brand-100 px-5 sm:px-8 py-2.5">
+          <div className="max-w-7xl mx-auto flex items-center gap-3">
+            <span className="text-brand-600 text-sm">📋</span>
+            <p className="flex-1 text-sm text-brand-700 font-medium">
+              Loaded from history:{" "}
+              <span className="font-bold">"{fromHistory.title}"</span>
+              {fromHistory.avg_score != null && (
+                <span className="ml-2 text-brand-500">
+                  · avg {fromHistory.avg_score}% · {fromHistory.resume_count} resume{fromHistory.resume_count !== 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+            <button
+              onClick={() => { setFromHistory(null); setJd(""); setFiles([]); setCandidates([]); setDone(false); }}
+              className="text-brand-400 hover:text-brand-700 transition-colors flex-shrink-0"
+              title="Clear"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Step progress bar ── */}
       <div className="bg-white border-b border-slate-200 sticky top-14 lg:top-0 z-20 shadow-sm">
@@ -343,8 +420,8 @@ export default function Screener() {
                   </div>
                 </div>
                 {done && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <span className="hidden sm:inline text-xs font-bold text-emerald-700 bg-emerald-50
                       border border-emerald-200 px-3 py-1 rounded-full">
                       ✓ Complete
                     </span>
@@ -354,7 +431,7 @@ export default function Screener() {
                         border border-brand-200 px-3 py-1 rounded-full
                         hover:bg-brand-100 transition-colors"
                     >
-                      View Pipeline →
+                      Pipeline →
                     </button>
                   </div>
                 )}
@@ -368,7 +445,7 @@ export default function Screener() {
                     { label: "Top Score", value: `${topScore}%`    },
                     { label: "Average",   value: `${avgScore}%`    },
                   ].map(({ label, value }) => (
-                    <div key={label} className="px-4 py-3 text-center">
+                    <div key={label} className="px-2 sm:px-4 py-3 text-center">
                       <p className="text-lg font-extrabold text-slate-900">{value}</p>
                       <p className="text-[11px] text-slate-400 font-medium">{label}</p>
                     </div>
@@ -501,6 +578,11 @@ export default function Screener() {
                   </p>
                 </div>
               </div>
+
+              {/* ── Parsed Profile ── */}
+              {selected.parsed && (
+                <ParsedProfile parsed={selected.parsed} />
+              )}
 
               {selected.details && (
                 <div className="p-4 bg-slate-50 rounded-2xl">
